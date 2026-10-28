@@ -1,0 +1,50 @@
+
+name: Security Scans
+
+on:
+  push:
+    branches: [main, lab7-security-review]
+  pull_request:
+    branches: [main]
+
+jobs:
+  sast:
+    name: SAST - Gosec
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Run Gosec
+        uses: securego/gosec@master
+        with:
+          args: ./...
+
+  sca:
+    name: SCA - OSV Scanner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Scan Go dependencies
+        uses: google/osv-scanner-action/osv-scanner-action@v2.0.2
+        with:
+          scan-args: |-
+            --lockfile=go.mod
+            .
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Scan npm dependencies
+        run: npx --yes osv-scanner scan source -L package-lock.json
+
+
