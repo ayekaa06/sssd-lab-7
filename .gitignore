@@ -41,3 +41,6 @@ DerivedData/
 # Xcode
 xcuserdata/
 *.xcuserstate
+
+# Node dependencies
+node_modules/
