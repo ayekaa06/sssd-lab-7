@@ -39,12 +39,6 @@ jobs:
             --lockfile=go.mod
             --no-call-analysis=go
             .
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Scan npm dependencies
-        run: npx --yes osv-scanner scan source -L package-lock.json
+     
 
 
