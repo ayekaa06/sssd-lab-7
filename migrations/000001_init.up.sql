@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
 CREATE INDEX idx_refresh_tokens_user_id ON refresh_tokens(user_id);
 
 -- ── Seed: Head пользователь ───────────────────────────────────────────────────
--- Пароль: Admin1234!  (bcrypt cost 12)
+-- Demo account password stored as bcrypt hash (cost 12)
 INSERT INTO users (email, password_hash, role, first_name, last_name)
 VALUES (
     'head@mentorhub.kz',

@@ -34,7 +34,7 @@ VALUES (
 ) ON CONFLICT (id) DO NOTHING;
 
 -- ── 3. Ментор и советник (новые, уникальные email) ───────────────────────────
--- Пароль: Test1234!  (bcrypt cost 12)
+-- Demo accounts use bcrypt password hashes (cost 12)
 
 INSERT INTO users (id, email, password_hash, role, first_name, last_name)
 VALUES

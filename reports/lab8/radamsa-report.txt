@@ -1,0 +1,10 @@
+Radamsa API Fuzzing Report
+Target: http://localhost:8089/api/v1/auth/login
+Generated and sent requests: 100
+
+HTTP status summary:
+HTTP 400: 35
+HTTP 401: 65
+
+Errors:
+None

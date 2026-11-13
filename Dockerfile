@@ -1,5 +1,5 @@
 # ── Stage 1: Build ──────────────────────────────────────────────────────────
-FROM golang:1.22-alpine AS builder
+FROM golang:1.27.3-alpine AS builder
 
 WORKDIR /app
 
@@ -22,15 +22,16 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates tzdata
 
 WORKDIR /app
+RUN adduser -D -u 10001 appuser
 
 COPY --from=builder /app/server .
 
 # .env опциональный — можно не включать в image (использовать env vars)
-COPY --from=builder /app/.env* ./
 
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD wget -qO- http://localhost:8080/health || exit 1
 
+USER appuser
 CMD ["./server"]

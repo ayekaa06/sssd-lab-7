@@ -67,7 +67,7 @@ services:
       dockerfile: Dockerfile
     container_name: mentorhub-frontend
     ports:
-      - "8082:80"
+      - "8082:8080"
     depends_on:
       - mentorhub-backend
     restart: unless-stopped

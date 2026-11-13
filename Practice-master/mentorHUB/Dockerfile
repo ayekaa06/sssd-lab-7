@@ -1,25 +1,25 @@
-# ── Stage 1: Build ──────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
 
 WORKDIR /app
-
-# Cache dependencies
 COPY package*.json ./
 RUN npm ci
-
-# Copy sources and build
 COPY . .
 RUN npx ng build --configuration production --base-href /mentorhub/
 
-# ── Stage 2: Serve ───────────────────────────────────────────────────────────
 FROM nginx:alpine
 
-# Copy custom nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Copy build output to nginx html directory
+COPY nginx-main.conf /etc/nginx/nginx.conf
 COPY --from=builder /app/dist/mentorHUB/browser /usr/share/nginx/html
 
-EXPOSE 80
+RUN chown -R nginx:nginx /usr/share/nginx/html \
+    && touch /tmp/nginx.pid \
+    && chown nginx:nginx /tmp/nginx.pid \
+    && mkdir -p /tmp/nginx-cache \
+    && chown -R nginx:nginx /tmp/nginx-cache
+
+USER nginx
+
+EXPOSE 8080
 
 CMD ["nginx", "-g", "daemon off;"]

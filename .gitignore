@@ -44,3 +44,7 @@ xcuserdata/
 
 # Node dependencies
 node_modules/
+
+# Environment files
+.env.*
+!.env.example

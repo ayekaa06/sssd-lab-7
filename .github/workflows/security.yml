@@ -1,14 +1,35 @@
-
-name: Security Scans
+name: Security Pipeline
 
 on:
   push:
-    branches: [main, lab7-security-review]
+    branches: [main, lab7-security-review, lab8-lab10]
   pull_request:
-    branches: [main]
+    branches: [main, lab8-lab10]
+
+permissions:
+  contents: read
+  security-events: write
 
 jobs:
-  sast:
+  build-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.4'
+
+      - name: Run tests
+        run: go test ./...
+
+      - name: Build application
+        run: go build ./...
+
+  gosec:
     name: SAST - Gosec
     runs-on: ubuntu-latest
     steps:
@@ -18,27 +39,59 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.27.3'
+          go-version: '1.27.4'
+
+      - name: Install Gosec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
 
       - name: Run Gosec
-        uses: securego/gosec@master
-        with:
-          args: ./...
+        run: |
+          mkdir -p reports/lab10
+          $(go env GOPATH)/bin/gosec -fmt=json -out=reports/lab10/gosec-report.json ./...
 
-  sca:
-    name: SCA - OSV Scanner
+      - name: Upload Gosec report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gosec-report
+          path: reports/lab10/gosec-report.json
+          if-no-files-found: warn
+
+  semgrep:
+    name: SAST - Semgrep
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Scan Go dependencies
-        uses: google/osv-scanner-action/osv-scanner-action@v2.0.2
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          scan-args: |-
-            --lockfile=go.mod
-            --no-call-analysis=go
-            .
-     
+          python-version: '3.12'
 
+      - name: Install Semgrep
+        run: pip install semgrep
 
+      - name: Run Semgrep
+        run: |
+          mkdir -p reports/lab10
+          semgrep scan --config auto --json --output reports/lab10/semgrep-report.json .
+
+      - name: Upload Semgrep report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-report
+          path: reports/lab10/semgrep-report.json
+          if-no-files-found: warn
+  sca:
+    name: SCA - OSV Scanner
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.7.1
+    with:
+      scan-args: |-
+        --lockfile=./go.mod
+        --lockfile=./Practice-master/mentorHUB/package-lock.json
